@@ -1,8 +1,4 @@
 defmodule GildedRose do
-  # Example
-  # update_quality([%Item{name: "Backstage passes to a TAFKAL80ETC concert", sell_in: 9, quality: 1}])
-  # => [%Item{name: "Backstage passes to a TAFKAL80ETC concert", sell_in: 8, quality: 3}]
-
   def update_quality(items) do
     Enum.map(items, &update_item/1)
   end
@@ -31,6 +27,11 @@ defmodule GildedRose do
   defp decrease_sell_in(%{name: "Sulfuras, Hand of Ragnaros"} = item), do: item
   defp decrease_sell_in(%{sell_in: sell_in} = item), do: %{item | sell_in: sell_in - 1}
 
+  # Función auxiliar para manejar los artículos vencidos
+  defp handle_expired(%{name: "Backstage passes to a TAFKAL80ETC concert"} = item), do: %{item | quality: 0}
+  defp handle_expired(%{name: "Aged Brie", quality: quality} = item) when quality < 50, do: %{item | quality: quality + 1}
+  defp handle_expired(item), do: decrease_quality(item)
+
   def update_item(item) do
     # Actualización de calidad
     item = cond do
@@ -44,19 +45,7 @@ defmodule GildedRose do
     # Reducción de sell_in
     item = decrease_sell_in(item)
 
-    # Ajuste final de calidad si el ítem ya está vencido
-    cond do
-      item.sell_in < 0 ->
-        cond do
-          item.name != "Aged Brie" && item.name != "Backstage passes to a TAFKAL80ETC concert" ->
-            decrease_quality(item)
-          item.name == "Backstage passes to a TAFKAL80ETC concert" ->
-            %{item | quality: 0}
-          item.name == "Aged Brie" && item.quality < 50 ->
-            %{item | quality: item.quality + 1}
-          true -> item
-        end
-      true -> item
-    end
+    # Lógica de artículos vencidos, usando la nueva función auxiliar
+    if item.sell_in < 0, do: handle_expired(item), else: item
   end
 end
