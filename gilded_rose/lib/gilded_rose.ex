@@ -12,7 +12,7 @@ defmodule GildedRose do
   defp decrease_quality(%{quality: quality} = item) when quality > 0, do: %{item | quality: quality - 1}
   defp decrease_quality(item), do: item
 
-  # Función auxiliar para aumentar la calidad, con reglas específicas para los "Backstage passes"
+  # Función auxiliar para aumentar la calidad
   defp increase_quality(%{name: "Backstage passes to a TAFKAL80ETC concert", sell_in: sell_in, quality: quality} = item) when quality < 50 do
     quality_increase = 
       cond do
@@ -27,6 +27,10 @@ defmodule GildedRose do
   defp increase_quality(%{quality: quality} = item) when quality < 50, do: %{item | quality: quality + 1}
   defp increase_quality(item), do: item
 
+  # Función auxiliar para reducir sell_in
+  defp decrease_sell_in(%{name: "Sulfuras, Hand of Ragnaros"} = item), do: item
+  defp decrease_sell_in(%{sell_in: sell_in} = item), do: %{item | sell_in: sell_in - 1}
+
   def update_item(item) do
     # Actualización de calidad
     item = cond do
@@ -37,11 +41,8 @@ defmodule GildedRose do
       true -> item
     end
 
-    # Reducción de sell_in, excepto para "Sulfuras"
-    item = cond do
-      item.name != "Sulfuras, Hand of Ragnaros" -> %{item | sell_in: item.sell_in - 1}
-      true -> item
-    end
+    # Reducción de sell_in
+    item = decrease_sell_in(item)
 
     # Ajuste final de calidad si el ítem ya está vencido
     cond do
